@@ -1,0 +1,114 @@
+<!-- This is based on Google's snippet found here: https://developers.google.com/maps/documentation/javascript/examples/polygon-arrays -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Polygon Arrays</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+
+      #controls {
+        position: absolute;
+        top: 50px;
+        right: 50px;
+        z-index: 1000;
+        width: 200px;
+        background: white;
+        border: 1px solid black;
+        height: 200px;
+        padding: 10px;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script>
+// This example creates polygons based on arrays of coordinates.
+// When the user clicks on the polygon an info window opens, showing
+// information about the polygon's coordinates.
+
+var map;
+var infoWindow;
+
+function initialize() {
+  var mapOptions = {
+    zoom: 11,
+    center: new google.maps.LatLng(-22.9156912, -43.449703),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+
+  var bermudaTriangle;
+
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+  infoWindow = new google.maps.InfoWindow();
+}
+
+function addToTheMap() {
+  var rawCoordinates = document.getElementById("coordinates").value.split("\n");
+
+  var coordinatesArray = [];
+
+  for (var i = 0; i < rawCoordinates.length; ++i) {
+    var coordinate = rawCoordinates[i].split(",");
+
+    coordinatesArray.push(new google.maps.LatLng(coordinate[1].trim(), coordinate[0].trim()));
+  }
+
+  var polygon = new google.maps.Polygon({
+    paths: coordinatesArray,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 3,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35
+  });
+
+  polygon.setMap(map);
+
+  // Add a listener for the click event.
+  google.maps.event.addListener(polygon, 'click', showArrays);
+
+  document.getElementById("coordinates").value = '';
+}
+
+/** @this {google.maps.Polygon} */
+function showArrays(event) {
+
+  // Since this polygon has only one path, we can call getPath()
+  // to return the MVCArray of LatLngs.
+  var vertices = this.getPath();
+
+  var contentString = 'Clicked location: <br>' + event.latLng.lat() + ',' + event.latLng.lng() + '<br>';
+
+  // Iterate over the vertices.
+  for (var i =0; i < vertices.getLength(); i++) {
+    var xy = vertices.getAt(i);
+    contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +
+        xy.lng();
+  }
+
+  // Replace the info window's content and position.
+  infoWindow.setContent(contentString);
+  infoWindow.setPosition(event.latLng);
+
+  infoWindow.open(map);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+    <div id="controls">
+      <textarea placeholder="Enter your coordinates here, one per line. Example:
+
+-43.16287994, -22.9130214
+-43.18330765, -22.8910413" id="coordinates" style="width: 195px; height: 160px;"></textarea><br />
+      <button style="height: 30px; width: 200px" onclick="addToTheMap()">Add to the map</button>
+    </div>
+    <div id="map-canvas"></div>
+  </body>
+</html>
